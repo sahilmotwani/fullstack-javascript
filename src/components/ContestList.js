@@ -7,8 +7,7 @@ class ContestList extends React.Component {
     };
     render() {
         if(!this.state.contests){
-            this.state.contests = window.initialData
-        }
+            this.state.contests = window.initialData }
         return (
             <div>
                 {this.state.contests.map(contest =>
