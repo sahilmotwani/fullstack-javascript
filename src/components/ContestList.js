@@ -1,27 +1,28 @@
 import React from 'react';
 import ContestPreview from './ContestPreview';
 
-class ContestList extends React.Component { 
+class ContestList extends React.Component {
     state = {
-        contests: this.props.contests
+        contests: this.props.contests,
+        onContestClick: this.props.onContestClick
     };
     render() {
-        if(!this.state.contests){
-            this.state.contests = window.initialData }
+        if (!this.state.contests) {
+            this.state.contests = window.initialData
+        }
         return (
-            <div>
-                {this.state.contests.map(contest =>
-                    <ContestPreview key={contest.id} {...contest} />
+            <div className="ContestList" >
+                {Object.keys(this.state.contests).map(contestId =>
+                    <ContestPreview key={contestId} {...this.state.contests[contestId]} onClick={this.state.onContestClick} />
                 )}
             </div>
         );
-        
-
     }
 }
 
 ContestList.propTypes = {
-    contests: React.PropTypes.array
+    contests: React.PropTypes.object,
+    onContestClick: React.PropTypes.func.isRequired
 };
 
 export default ContestList;
