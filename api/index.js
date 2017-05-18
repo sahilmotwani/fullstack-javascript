@@ -1,22 +1,57 @@
 import express from 'express';
-import data from '../src/testData.json';
+import { MongoClient } from 'mongodb';
+import assert from 'assert';
+import config from '../config';
+
+let mdb;
+
+MongoClient.connect(config.mongodbUri, (err, db) => {
+    assert.equal(null, err);
+    mdb = db;
+});
 
 const router = express.Router();
-const contests = data.contests.reduce((obj, contest) => {
-    obj[contest.id] = contest;
-    return obj;
-}, {});
 
 router.get('/contests', (req, res) => {
-    res.send({
-        contests: contests
-    });
+    let contests = {};
+
+    mdb.collection('contests').find({})
+        .project({
+            id: 1,
+            categoryName: 1,
+            contestName: 1
+        })
+        .each((err, contest) => {
+            assert.equal(null, err);
+            if (!contest) {
+                res.send({contests});
+                return;
+            }
+            contests[contest.id] = contest;
+        });
 });
 
 router.get('/contests/:contestId', (req, res) => {
-    let contest = contests[req.params.contestId];
-    contest.description = 'He determined to drop his litigation with the monastry, and relinguish his claims to the wood-cuting and fishery rihgts at once. He was the more ready to do this becuase the rights had becom much less valuable, and he had indeed the vaguest idea where the wood and river in quedtion were.';
-    res.send( contest);
+mdb.collection('contests')
+.findOne({id : Number(req.params.contestId)})
+.then(contest => res.send(contest))
+.catch(console.error)
 });
+
+
+router.get('/names/:nameIds', (req, res) => {
+    let names = {};
+    const nameIds = req.params.nameIds.split(',').map(Number);
+    mdb.collection('names').find({id: {$in: nameIds}})
+         .each((err, name) => {
+            assert.equal(null, err);
+            if (!name) {
+                res.send({names});
+                return;
+            }
+            names[name.id] = name;
+        });
+});
+
 
 export default router;

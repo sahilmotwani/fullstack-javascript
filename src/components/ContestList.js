@@ -12,8 +12,9 @@ class ContestList extends React.Component {
         }
         return (
             <div className="ContestList" >
-                {Object.keys(this.state.contests).map(contestId =>
-                    <ContestPreview key={contestId} {...this.state.contests[contestId]} onClick={this.state.onContestClick} />
+                {Object.keys(this.state.contests).map(contestId =>{
+                    return <ContestPreview key={contestId} {...this.state.contests[contestId]} onClick={this.state.onContestClick} />
+                    }
                 )}
             </div>
         );
