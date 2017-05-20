@@ -2,10 +2,11 @@ import config from './config';
 import apiRouter from './api';
 import express from 'express';
 import sassMiddleware from 'node-sass-middleware';
+import bodyParser from 'body-parser';
 import path from 'path';
 
 const server = express();
-
+server.use(bodyParser.json());
 server.set('view engine', 'ejs');
 
 server.use(sassMiddleware(
@@ -26,7 +27,9 @@ server.get(['/','/contest/:contestId'], (req, res) => {
                 initialData
             });
         })
-        .catch(console.error);
+        .catch(error => {
+            res.status(404).send("Bad Request");
+        });
 });
 
 server.use(express.static('public'));

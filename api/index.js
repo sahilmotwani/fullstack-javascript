@@ -1,5 +1,5 @@
 import express from 'express';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectID } from 'mongodb';
 import assert from 'assert';
 import config from '../config';
 
@@ -17,40 +17,62 @@ router.get('/contests', (req, res) => {
 
     mdb.collection('contests').find({})
         .project({
-            id: 1,
             categoryName: 1,
             contestName: 1
         })
         .each((err, contest) => {
             assert.equal(null, err);
             if (!contest) {
-                res.send({contests});
+                res.send({ contests });
                 return;
             }
-            contests[contest.id] = contest;
+            contests[contest._id] = contest;
         });
 });
 
 router.get('/contests/:contestId', (req, res) => {
-mdb.collection('contests')
-.findOne({id : Number(req.params.contestId)})
-.then(contest => res.send(contest))
-.catch(console.error)
+    mdb.collection('contests')
+        .findOne({ _id: ObjectID(req.params.contestId) })
+        .then(contest => res.send(contest))
+        .catch(console.error)
 });
 
 
 router.get('/names/:nameIds', (req, res) => {
     let names = {};
-    const nameIds = req.params.nameIds.split(',').map(Number);
-    mdb.collection('names').find({id: {$in: nameIds}})
-         .each((err, name) => {
+    const nameIds = req.params.nameIds.split(',').map(ObjectID);
+    mdb.collection('names').find({ _id: { $in: nameIds } })
+        .each((err, name) => {
             assert.equal(null, err);
             if (!name) {
-                res.send({names});
+                res.send({ names });
                 return;
             }
-            names[name.id] = name;
+            names[name._id] = name;
         });
+});
+
+router.post('/names', (req, res) => {
+    const contestId = ObjectID(req.body.contestId);
+    const name = req.body.newName;
+    mdb.collection('names').insertOne({ name }).then(result => {
+       
+        mdb.collection('contests').findAndModify(
+            {_id : contestId},
+            [],
+            {$push: {nameIds : result.insertedId}},
+            {new : true}
+        ).then(doc => {
+            res.send({
+                updatedContest : doc.value,
+                newName : {_id: result.insertedId,name}
+            })
+
+        })
+        .catch(error =>{
+            res.status(404).send("Bad request");
+        })
+    });
 });
 
 
