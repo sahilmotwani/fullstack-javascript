@@ -75,7 +75,7 @@ class Contest extends React.Component {
 }
 
 Contest.propTypes = {
-    _id: React.PropTypes.number.isRequired,
+    _id: React.PropTypes.string.isRequired,
     contestListClick: React.PropTypes.func.isRequired,
     fetchNames: React.PropTypes.func.isRequired,
     nameIds: React.PropTypes.array.isRequired,
